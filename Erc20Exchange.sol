@@ -18,6 +18,14 @@ contract Erc20Exchange is usingOraclize {
         _;
     }
     
+    enum oraclizeState { ForBat, ForGnt };
+    
+    struct oraclizeCallback {
+        oraclizeState oState;
+    }
+    
+    mapping (bytes32 => oraclizeCallback) public oraclizeCallbacks;
+    
     event SellingBat(address user, uint amount);
     event SellingGnt(address user, uint amount);
     
@@ -44,7 +52,9 @@ contract Erc20Exchange is usingOraclize {
         require(batBalances[msg.sender] >= _amount, "not enough balance");
         updateBat();
         updateGnt();
+        // TODO: we need to make sure the price is the lastet
         
+        gntBatPrice = gntEthPrice / batEthPrice; 
         uint gntAmount = batGntPrice * (_amount - fee);
         if (transferBat(_amount)) {
             batBalances[msg.sender] -= _amount; //TODO: add underflow protection
@@ -88,22 +98,25 @@ contract Erc20Exchange is usingOraclize {
         }
     }
     
-    function __callback(string result) public {
-        // TODO: get 2 results same time?
-        require(msg.sender == oraclize_cbAddress());
-        batEthPrice = parseInt(result, 2); 
-        gntEthPrice = parseInt(result, 2); 
-        
-        gntBatPrice = gntEthPrice / batEthPrice; 
+    function __callback(bytes32 _myid, string _result) {
+        require (msg.sender == oraclize_cbAddress());
+        oraclizeCallback memory o = oraclizeCallbacks[myid];
+        if (o.oState == oraclizeState.ForBat) {
+            batEthPrice = parseInt(result, 2);
+        } else if(o.oState == oraclizeState.Forxpected) {
+            gntEthPrice = parseInt(result, 2);;   
+        }
     }
-
+    
     function updateBat() public payable {
         // TODO: fix endpoint
-        oraclize_query("URL", "xml(https://api.bitfinex.com/v2/book/tBATETH/P0)");
+        bytes32 queryId = oraclize_query("URL","xml(https://api.bitfinex.com/v2/book/tBATETH/P0)");
+        oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForBat);
     }
     
     function updateGnt() public payable {
         // TODO: fix endpoint
-        oraclize_query("URL", "xml(https://api.bitfinex.com/v2/book/tGNTETH/P0)");
+        bytes32 queryId = oraclize_query("URL","xml(https://api.bitfinex.com/v2/book/tGNTETH/P0)");
+        oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForGnt);
     }
 }
