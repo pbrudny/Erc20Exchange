@@ -62,13 +62,13 @@ contract Erc20Exchange is usingOraclize {
     }
     
     function sellGnt() public {
-        // same as sellBat()
+        // TODO: same as sellBat()
     }
     
     function transferGnt(uint _amount) public returns (bool answer) {
         bytes4 sig = batAddress.call(bytes4(keccak256("transfer(address, uint)")), msg.sender, _amount);
         
-        // TODO: adjust this to get a result from the contract without using ABI
+        // get a result from the contract without using ABI - 
         // See: https://medium.com/@blockchain101/calling-the-function-of-another-contract-in-solidity-f9edfa921f4c
         assembly {
             // move pointer to free memory spot
