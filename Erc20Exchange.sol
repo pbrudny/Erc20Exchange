@@ -10,7 +10,7 @@ contract Erc20Exchange is usingOraclize {
     uint gntBatPrice;
     
     //mapping - how much user has both tokens on Erc20Exchange
-    mapping(address => uint) public batBalances; //how much he transferred
+    mapping(address => uint) public batBalances;
     mapping(address => uint) public gntBalances;
 
     modifier isOwner {
@@ -56,19 +56,20 @@ contract Erc20Exchange is usingOraclize {
         
         gntBatPrice = gntEthPrice / batEthPrice; 
         uint gntAmount = batGntPrice * (_amount - fee);
-        if (transferBat(_amount)) {
+
+        // TODO: check the gnt balance
+        if (transferGnt(_amount)) {
             batBalances[msg.sender] -= _amount; //TODO: add underflow protection
             emit sellBat(msg.sender, amount);
         }
     }
     
     function sellGnt() {
-        // same as selBat()
+        // same as sellBat()
     }
     
-    function transferBat(uint _amount) public returns (bool answer) {
-        bytes4 sig = batAddress.call(
-            bytes4(keccak256("transfer(address, uint)")), msg.sender, gntAmount);
+    function transferGnt(uint _amount) public returns (bool answer) {
+        bytes4 sig = batAddress.call(bytes4(keccak256("transfer(address, uint)")), msg.sender, _amount);
         
         // TODO: adjust this to get a result from the contract without using ABI
         // See: https://medium.com/@blockchain101/calling-the-function-of-another-contract-in-solidity-f9edfa921f4c
@@ -82,7 +83,7 @@ contract Erc20Exchange is usingOraclize {
 
             let result := call(
               15000, // gas limit
-              sload(dc_slot),  // to addr. append var to _slot to access storage variable
+              sload(gntAddress_slot),  // to addr. append var to _slot to access storage variable
               0, // not transfer any ether
               ptr, // Inputs are stored at location ptr
               0x24, // Inputs are 36 bytes long
@@ -102,7 +103,7 @@ contract Erc20Exchange is usingOraclize {
         require (msg.sender == oraclize_cbAddress());
         oraclizeCallback memory o = oraclizeCallbacks[myid];
         if (o.oState == oraclizeState.ForBat) {
-            batEthPrice = parseInt(result, 2);
+            batEthPrice = parseInt(result, 2); //TODO: should be float
         } else if(o.oState == oraclizeState.Forxpected) {
             gntEthPrice = parseInt(result, 2);;   
         }
