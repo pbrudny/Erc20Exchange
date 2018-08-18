@@ -43,28 +43,28 @@ contract Erc20Exchange is usingOraclize {
         batBalances[user] = amount;    
     }
     
-    function sellBat(uint _amount) {
+    function sellBat(uint _batAmount) public {
         // check if user has enough funds
         // amount should be less (99,9%)
         // get the last price
         // call the transfer on the Bat contract (transfer from xchange account to user account)
-        uint fee = _amount * 0.001;
-        require(batBalances[msg.sender] >= _amount, "not enough balance");
+        uint fee = _batAmount * 0.001;
+        require(batBalances[msg.sender] >= _batAmount, "not enough balance");
         updateBat();
         updateGnt();
         // TODO: we need to make sure the price is the lastet
         
         gntBatPrice = gntEthPrice / batEthPrice; 
-        uint gntAmount = batGntPrice * (_amount - fee);
+        uint gntAmount = batGntPrice * (_batAmount - fee);
 
         // TODO: check the gnt balance
-        if (transferGnt(_amount)) {
-            batBalances[msg.sender] -= _amount; //TODO: add underflow protection
-            emit sellBat(msg.sender, amount);
+        if (transferGnt(gntAmount)) {
+            batBalances[msg.sender] -= _batAmount; //TODO: add underflow protection
+            emit sellBat(msg.sender, _batAmount);
         }
     }
     
-    function sellGnt() {
+    function sellGnt() public {
         // same as sellBat()
     }
     
@@ -99,13 +99,13 @@ contract Erc20Exchange is usingOraclize {
         }
     }
     
-    function __callback(bytes32 _myid, string _result) {
+    function __callback(bytes32 _myid, string _result) public {
         require (msg.sender == oraclize_cbAddress());
         oraclizeCallback memory o = oraclizeCallbacks[myid];
         if (o.oState == oraclizeState.ForBat) {
             batEthPrice = parseInt(result, 2); //TODO: should be float
         } else if(o.oState == oraclizeState.Forxpected) {
-            gntEthPrice = parseInt(result, 2);;   
+            gntEthPrice = parseInt(result, 2);
         }
     }
     
