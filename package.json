@@ -2,5 +2,11 @@
   "name": "Erc20Exchange",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "request": "^2.88.0"
+  }
 }
