@@ -7,4 +7,4 @@
 //  And tokens are transferred from user account to exchange account
 //  And the transaction is analysed by the backend app
 //  When the transaction is ok
-//  Then the backend app should call SetUserGntBalance() on the smart contract with data taken from the transaction 
+//  Then the backend app calls SetUserGntBalance() on the smart contract with data read from the transaction 

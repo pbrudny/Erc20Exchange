@@ -18,7 +18,7 @@ contract Erc20Exchange is usingOraclize {
         _;
     }
     
-    enum oraclizeState { ForBat, ForGnt };
+    enum oraclizeState { ForBat, ForGnt }
     
     struct oraclizeCallback {
         oraclizeState oState;
