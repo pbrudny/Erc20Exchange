@@ -4,7 +4,8 @@ import "../utils/usingOraclize.sol";
 contract Erc20Exchange is usingOraclize {
     address private _owner;
     address public gntAddress;
-    
+    address public batAddress;
+
     uint batEthPrice; 
     uint gntEthPrice;
     uint gntBatPrice;
