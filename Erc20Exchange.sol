@@ -10,7 +10,7 @@ contract Erc20Exchange is usingOraclize {
     uint gntEthPrice;
     uint gntBatPrice;
     
-    //mapping - how much user has both tokens on Erc20Exchange
+    // mapping - how much both tokens user has on Erc20Exchange
     mapping(address => uint) public batBalances;
     mapping(address => uint) public gntBalances;
 
@@ -31,7 +31,7 @@ contract Erc20Exchange is usingOraclize {
     event SellingGnt(address user, uint amount);
     
     constructor(address _gntAddress, address _batAddress) public payable {
-        owner = msg.sender;
+        _owner = msg.sender;
         gntAddress = _gntAddress;
         batAddress = _batAddress;
     }
@@ -44,19 +44,15 @@ contract Erc20Exchange is usingOraclize {
         batBalances[user] = amount;    
     }
     
+    // call the transfer on the Gnt contract (transfer from exchange account to the user account)
     function sellBat(uint _batAmount) public {
-        // check if user has enough funds
-        // amount should be less (99,9%)
-        // get the last price
-        // call the transfer on the Bat contract (transfer from xchange account to user account)
-        uint fee = _batAmount * 0.001;
         require(batBalances[msg.sender] >= _batAmount, "not enough balance");
         updateBat();
         updateGnt();
-        // TODO: we need to make sure the price is the lastet
+        // TODO: we need to make sure the price is the latest
         
         gntBatPrice = gntEthPrice / batEthPrice; 
-        uint gntAmount = batGntPrice * (_batAmount - fee);
+        uint gntAmount = batGntPrice * 0.999 * _batAmount; // The fee is 0.1 % 
 
         // TODO: check the gnt balance
         if (transferGnt(gntAmount)) {
@@ -101,7 +97,7 @@ contract Erc20Exchange is usingOraclize {
     }
     
     function __callback(bytes32 _myid, string _result) public {
-        require (msg.sender == oraclize_cbAddress());
+        require (msg.sender == oraclize_cbAddress(), "wrong sender");
         oraclizeCallback memory o = oraclizeCallbacks[myid];
         if (o.oState == oraclizeState.ForBat) {
             batEthPrice = parseInt(result, 2); //TODO: should be float
